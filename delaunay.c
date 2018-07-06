@@ -1,34 +1,9 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include "defs.h"
-#include "helper.h"
 #include "delaunay.h"
 #include "topology.h"
-#include "io.h"
-
-void main()
-{
-	char filename[] = "input.txt";
-	PointList *point_list = getPoints(filename);
-	size_t num_points = point_list->size;
-
-	EdgeList *edge_list = initializeEdgeList(num_points);
-
-	ExtremeEdge *ex = delaunay_horizontal(point_list->unused_points, num_points, edge_list);
-
-	showPoint(point_list->points);
-	printf(" %d\n", onConvexHull(point_list->points));
-	deleteAndTriangulate(point_list->points, point_list, edge_list);
-	printf("\n----------------\n");
-	showEdges(point_list);
-
-	free(ex);
-
-	freePoints(point_list, edge_list);
-	freeEdges(edge_list);
-	free(edge_list);
-	free(point_list);
-}
+#include "helper.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 EdgeList *initializeEdgeList(size_t num_points)
 {
