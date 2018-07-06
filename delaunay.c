@@ -1,35 +1,49 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "Typedefine.h"
+#include "defs.h"
 #include "helper.h"
 #include "delaunay.h"
+#include "topology.h"
 #include "io.h"
 
 void main()
 {
 	char filename[] = "input.txt";
-	size_t num_points = 0;
-	Point **point_list;
+	PointList *point_list = getPoints(filename);
+	size_t num_points = point_list->size;
 
-	getPoints(filename, &point_list, &num_points);
+	EdgeList *edge_list = initializeEdgeList(num_points);
 
-	EdgeList *edge_list = malloc(sizeof *edge_list);
-	edge_list->edges = malloc(6 * num_points * sizeof(*(edge_list->edges)));
+	ExtremeEdge *ex = delaunay_horizontal(point_list->unused_points, num_points, edge_list);
 
-	edge_list->unused_edges = malloc(6 * num_points * sizeof(*(edge_list->unused_edges)));
-	for (size_t t = 0; t < 6 * num_points; t++) (edge_list->unused_edges)[t] = edge_list->edges + t;
-
-	edge_list->idx = 6 * num_points - 1;
-	edge_list->size = 6 * num_points;
-
-	ExtremeEdge *ex = delaunay_horizontal(point_list, num_points, edge_list);
-	showEdges(point_list, num_points);
+	showPoint(point_list->points);
+	printf(" %d\n", onConvexHull(point_list->points));
+	deleteAndTriangulate(point_list->points, point_list, edge_list);
+	printf("\n----------------\n");
+	showEdges(point_list);
 
 	free(ex);
 
-	freePoints(point_list, num_points, edge_list);
+	freePoints(point_list, edge_list);
 	freeEdges(edge_list);
 	free(edge_list);
+	free(point_list);
+}
+
+EdgeList *initializeEdgeList(size_t num_points)
+{
+	EdgeList *edge_list = malloc(sizeof *edge_list);
+
+	// Number of edges in triangulated graph is < 3*V
+	// and we store edge and its twin -> 6*V
+	edge_list->edges = malloc(6 * num_points * sizeof(*(edge_list->edges)));
+	edge_list->unused_edges = malloc(6 * num_points * sizeof(*(edge_list->unused_edges)));
+	for (size_t t = 0; t < 6 * num_points; t++) (edge_list->unused_edges)[t] = edge_list->edges + t;
+
+	edge_list->idx = 6 * num_points;
+	edge_list->size = 6 * num_points;
+
+	return edge_list;
 }
 
 ExtremeEdge *delaunay2(Point *point_list[], EdgeList *edge_list)
@@ -326,27 +340,26 @@ Edge *nextCrossEdge(Edge *base, EdgeList *edge_list)
 	else return bridge(l_cand, base, edge_list)->twin;
 }
 
-/*
-void deleteAndTriangulate(Point *p)
+void deleteAndTriangulate(Point *p, PointList *point_list, EdgeList *edge_list)
 {
 	if (p == NULL) return;
 
 	Edge *e = p->e;
-	if (e == NULL)
+	if (e == NULL || onConvexHull(p))
 	{
-		destroyPoint(p);
+		destroyPoint(p, point_list, edge_list);
 		return;
 	}
 
 	e = e->dnext;
-	destroyPoint(p);
+	destroyPoint(p, point_list, edge_list);
 
-	triangulateEmptyPolygon(e);
+	triangulateEmptyPolygon(e, edge_list);
 	return;
 }
 
 // e is a clockwise boundary edge
-void triangulateEmptyPolygon(Edge *e)
+void triangulateEmptyPolygon(Edge *e, EdgeList *edge_list)
 {
 	int n = 1;
 	Edge *f = e->dnext;
@@ -356,57 +369,56 @@ void triangulateEmptyPolygon(Edge *e)
 		f = f->dnext;
 	}
 
-	if (n == 3)
+	// Base Case
+	if (n <= 3)
 	{
 		return;
 	}
-	else
+
+	// Recurse
+	Edge **edges = malloc(n * sizeof(*edges));
+	for (int i = 0; i < n; i++)
 	{
-		Edge **edges = malloc(n * sizeof(*edges));
-		for (int i = 0; i < n; i++)
+		edges[i] = e;
+		e = e->dnext;
+	}	
+	
+	// Check if tri p_1, p_0, p_i is delaunay,
+	// for i = 2, ..., n-1
+	int i;
+	for (i = 2; i < n; i++)
+	{
+		int delaunay = 1;
+		for (int j = 2; j < n; j++)
 		{
-			edges[i] = e;
-			e = e->dnext;
-		}	
-		
-		// Check if tri p_1, p_0, p_i is delaunay,
-		// for i = 2, ..., n-1
-		int i;
-		for (i = 2; i < n; i++)
-		{
-			int delaunay = 1;
-			for (int j = 2; j < n; j++)
+			if ((j != i) && (inCircle(e->twin->orig, e->orig, edges[i]->orig, edges[j]->orig) > 0))
 			{
-				if ((j != i) && (inCircle(e->twin->orig, e->orig, edges[i]->orig, edges[j]->orig) > 0))
-				{
-					delaunay = 0;
-					break;
-				}
-			}
-				
-			if (delaunay)
-			{
-				if (i == 2)
-				{
-					e = bridge(edges[1], edges[0]);
-					triangulateEmptyPolygon(e->twin);
-				}
-				else if (i == n - 1)
-				{
-					e = bridge(edges[0], edges[n - 1]);
-					triangulateEmptyPolygon(e->twin);
-				}
-				else
-				{
-					Edge *e1 = bridge(edges[i - 1], edges[1]);
-					Edge *e2 = bridge(edges[n - 1], edges[i]);
-					triangulateEmptyPolygon(e1);
-					triangulateEmptyPolygon(e2);
-				}
+				delaunay = 0;
 				break;
 			}
 		}
-		free(edges);
+			
+		if (delaunay)
+		{
+			if (i == 2)
+			{
+				e = bridge(edges[1], edges[0], edge_list);
+				triangulateEmptyPolygon(e->twin, edge_list);
+			}
+			else if (i == n - 1)
+			{
+				e = bridge(edges[0], edges[n - 1], edge_list);
+				triangulateEmptyPolygon(e->twin, edge_list);
+			}
+			else
+			{
+				Edge *e1 = bridge(edges[i - 1], edges[1], edge_list);
+				Edge *e2 = bridge(edges[n - 1], edges[i], edge_list);
+				triangulateEmptyPolygon(e1, edge_list);
+				triangulateEmptyPolygon(e2, edge_list);
+			}
+			break;
+		}
 	}
+	free(edges);
 }
-*/

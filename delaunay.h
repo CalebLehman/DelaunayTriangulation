@@ -1,7 +1,9 @@
 #ifndef DELAUNAY_H
 #define DELAUNAY_H
 
-#include "Typedefine.h"
+#include "defs.h"
+
+EdgeList *initializeEdgeList(size_t num_points);
 
 /* Final delaunay functions
  */
@@ -13,5 +15,6 @@ ExtremeEdge *delaunay_vertical(Point *points_sorted[], size_t num_points, EdgeLi
 Edge *makeLowerCommonTangent(Edge *left_edge, Edge *right_edge);
 Edge *nextCrossEdge(Edge *base, EdgeList *edge_list);
 
-void triangulateEmptyPolygon(Edge *e);
+void deleteAndTriangulate(Point *p, PointList *point_list, EdgeList *edge_list);
+void triangulateEmptyPolygon(Edge *e, EdgeList *edge_list);
 #endif

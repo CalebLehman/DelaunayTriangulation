@@ -8,6 +8,7 @@ typedef struct Edge Edge;
 typedef struct ExtremeEdge ExtremeEdge;
 typedef long VALUE;
 typedef struct EdgeList EdgeList;
+typedef struct PointList PointList;
 
 /* By convention:
  * 	Positive rotation about a point
@@ -40,6 +41,13 @@ struct ExtremeEdge
 	Edge *top_edge_cw;
 };
 
+struct PointList
+{
+	Point *points;
+	Point **unused_points;
+	size_t idx;
+	size_t size;
+};
 
 struct EdgeList
 {
@@ -48,9 +56,9 @@ struct EdgeList
 	size_t idx;
 	size_t size;
 };
+
 /* Usefull macros
  */
-
 #define SWAP(a, b, T) {T temp_swap_var = (a); (a) = (b); (b) = temp_swap_var;}
 
 #endif

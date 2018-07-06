@@ -1,14 +1,14 @@
 #ifndef IO_H
 #define IO_H
 
-#include <stdio.h>
-#include "Typedefine.h"
+#include "defs.h"
 
-void getPoints(char *filename, Point **point_list[], size_t *num_points);
+PointList *getPoints(char *filename);
 void showPoint(Point *p);
 void showPoints(Point *point_list[], size_t num_points);
 void showEdge(Edge *e);
-void showEdges(Point *point_list[], size_t num_points);
+void showEdges(PointList *point_list);
+//void showEdges(Point *point_list[], size_t num_points);
 void showPointEdges(Point *point_list[], size_t num_points);
 
 #endif

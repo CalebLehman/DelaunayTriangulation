@@ -1,5 +1,7 @@
+#include <stdio.h>
 #include "io.h"
 #include "helper.h"
+#include "topology.h"
 
 /* Read points from a file
  * Format of file should be
@@ -8,7 +10,7 @@
  * 		coordinates for a single point
  * File should not have an empty newline at end
  */
-void getPoints(char *filename, Point **point_list[], size_t *num_points)
+PointList *getPoints(char *filename)
 {
 	FILE *fptr = fopen(filename, "r");
 	if (fptr == NULL)
@@ -17,26 +19,32 @@ void getPoints(char *filename, Point **point_list[], size_t *num_points)
 		exit(1);
 	}
 
+	PointList *point_list = malloc(sizeof *point_list);
+
 	size_t BUFF_SIZE = 512;
 	char buffer[BUFF_SIZE];
 	if (fgets(buffer, BUFF_SIZE, fptr))
 	{
-		sscanf(buffer, "%d", num_points);
+		sscanf(buffer, "%d", &(point_list->size));
 	}
 
-	*point_list = malloc((*num_points) * sizeof **point_list);
+	point_list->idx = point_list->size;
+	point_list->points = malloc((point_list->size) * sizeof *(point_list->points));
+	point_list->unused_points = malloc((point_list->size) * sizeof *(point_list->unused_points));
+	for (size_t i = 0; i < point_list->size; i++)
+	{
+		(point_list->unused_points)[i] = point_list->points + i;
+	}
 		
-	size_t idx = 0;
 	while (fgets(buffer, BUFF_SIZE, fptr))
 	{
 		VALUE x, y;
 		sscanf(buffer, "%ld %ld", &x, &y);
 
-		(*point_list)[idx] = makePoint(x, y);
-		idx++;
+		makePoint(x, y, point_list);
 	}
-	*num_points = idx;
 	fclose(fptr);
+	return point_list;
 }
 
 /* Display all points on stdout, using showPoint function
@@ -70,6 +78,43 @@ void showEdge(Edge *e)
 
 /* Display all edges on stdout, using showEdge function
  */
+void showEdges(PointList *point_list)
+{
+	for (size_t idx = 0; idx < point_list->size; idx++)
+	{
+		//printf("\tprinting for ");
+		//showPoint(point_list->points + idx);
+		//printf("\n");
+		int unused = 0;
+		for (size_t t = 0; t < point_list->idx; t++)
+		{
+			if ((point_list->unused_points)[t] == point_list->points + idx)
+			{
+				unused = 1;
+				break;
+			}
+		}
+		if (unused) continue;
+ 
+		Point p = (point_list->points)[idx];
+		Edge *e = p.e;
+		Edge *f = p.e;
+
+		if (f == NULL) continue;
+
+		do {
+			f = f->twin->dnext;
+
+			if (compareXY(f->orig, f->twin->orig))
+			{
+				showEdge(f);
+				printf("\n");
+			}
+		} while (f != e);
+	}
+}
+
+/*
 void showEdges(Point *point_list[], size_t num_points)
 {
 	for (size_t idx = 0; idx < num_points; idx++)
@@ -89,6 +134,7 @@ void showEdges(Point *point_list[], size_t num_points)
 		} while (f != e);
 	}
 }
+*/
 
 /*
 void showPointEdges(Point *point_list[], size_t num_points)
