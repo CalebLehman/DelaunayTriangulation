@@ -8,7 +8,5 @@ void showPoint(Point *p);
 void showPoints(Point *point_list[], size_t num_points);
 void showEdge(Edge *e);
 void showEdges(PointList *point_list);
-//void showEdges(Point *point_list[], size_t num_points);
-void showPointEdges(Point *point_list[], size_t num_points);
 
 #endif

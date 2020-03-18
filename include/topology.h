@@ -25,6 +25,7 @@ Edge *bridge(Edge *in, Edge *out, EdgeList *edge_list);
 
 /* Miscellaneous
  */
+
 int onConvexHull(Point *p);
 VALUE orientation(Point *a, Point *b, Point *c);
 VALUE inCircle(Point *a, Point *b, Point *c, Point *d);

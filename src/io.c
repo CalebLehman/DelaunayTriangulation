@@ -5,65 +5,65 @@
 
 /* Read points from a file
  * Format of file should be
- * 	1st line - Number of points
- * 	Each following line - Space-seperated
- * 		coordinates for a single point
+ *  1st line - Number of points
+ *  Each following line - Space-seperated
+ *      coordinates for a single point
  * File should not have an empty newline at end
  */
 PointList *getPoints(char *filename)
 {
-	FILE *fptr = fopen(filename, "r");
-	if (fptr == NULL)
-	{
-		printf("Failed to open %s\n", filename);
-		exit(1);
-	}
+    FILE *fptr = fopen(filename, "r");
+    if (fptr == NULL)
+    {
+        printf("Failed to open %s\n", filename);
+        exit(1);
+    }
 
-	PointList *point_list = malloc(sizeof *point_list);
+    PointList *point_list = malloc(sizeof *point_list);
 
-	size_t BUFF_SIZE = 512;
-	char buffer[BUFF_SIZE];
-	if (fgets(buffer, BUFF_SIZE, fptr))
-	{
-		sscanf(buffer, "%d", &(point_list->size));
-	}
+    size_t BUFF_SIZE = 512;
+    char buffer[BUFF_SIZE];
+    if (fgets(buffer, BUFF_SIZE, fptr))
+    {
+        sscanf(buffer, "%d", &(point_list->size));
+    }
 
-	point_list->idx = point_list->size;
-	point_list->points = malloc((point_list->size) * sizeof *(point_list->points));
-	point_list->unused_points = malloc((point_list->size) * sizeof *(point_list->unused_points));
-	for (size_t i = 0; i < point_list->size; i++)
-	{
-		(point_list->unused_points)[i] = point_list->points + i;
-	}
-		
-	while (fgets(buffer, BUFF_SIZE, fptr))
-	{
-		VALUE x, y;
-		sscanf(buffer, "%ld %ld", &x, &y);
+    point_list->idx = point_list->size;
+    point_list->points = malloc((point_list->size) * sizeof *(point_list->points));
+    point_list->unused_points = malloc((point_list->size) * sizeof *(point_list->unused_points));
+    for (size_t i = 0; i < point_list->size; i++)
+    {
+        (point_list->unused_points)[i] = point_list->points + i;
+    }
 
-		makePoint(x, y, point_list);
-	}
-	fclose(fptr);
-	return point_list;
+    while (fgets(buffer, BUFF_SIZE, fptr))
+    {
+        VALUE x, y;
+        sscanf(buffer, "%ld %ld", &x, &y);
+
+        makePoint(x, y, point_list);
+    }
+    fclose(fptr);
+    return point_list;
 }
 
 /* Display all points on stdout, using showPoint function
  */
 void showPoints(Point *point_list[], size_t num_points)
 {
-	printf("Total # of points: %d\n", num_points);
-	for (size_t idx = 0; idx < num_points; idx++)
-	{
-		showPoint(point_list[idx]);
-		printf("\n");
-	}
+    printf("Total # of points: %d\n", num_points);
+    for (size_t idx = 0; idx < num_points; idx++)
+    {
+        showPoint(point_list[idx]);
+        printf("\n");
+    }
 }
 
 /* Convert point to string and print to stdout
  */
 void showPoint(Point *p)
 {
-        printf("%ld %ld", p->x, p->y);
+    printf("%ld %ld", p->x, p->y);
 }
 
 /* Convert edge to string, using show point
@@ -71,82 +71,42 @@ void showPoint(Point *p)
  */
 void showEdge(Edge *e)
 {
-        showPoint(e->orig);
-        printf(" ");
-        showPoint(e->twin->orig);
+    showPoint(e->orig);
+    printf(" ");
+    showPoint(e->twin->orig);
 }
 
 /* Display all edges on stdout, using showEdge function
  */
 void showEdges(PointList *point_list)
 {
-	for (size_t idx = 0; idx < point_list->size; idx++)
-	{
-		//printf("\tprinting for ");
-		//showPoint(point_list->points + idx);
-		//printf("\n");
-		int unused = 0;
-		for (size_t t = 0; t < point_list->idx; t++)
-		{
-			if ((point_list->unused_points)[t] == point_list->points + idx)
-			{
-				unused = 1;
-				break;
-			}
-		}
-		if (unused) continue;
- 
-		Point p = (point_list->points)[idx];
-		Edge *e = p.e;
-		Edge *f = p.e;
+    for (size_t idx = 0; idx < point_list->size; idx++)
+    {
+        int unused = 0;
+        for (size_t t = 0; t < point_list->idx; t++)
+        {
+            if ((point_list->unused_points)[t] == point_list->points + idx)
+            {
+                unused = 1;
+                break;
+            }
+        }
+        if (unused) continue;
 
-		if (f == NULL) continue;
+        Point p = (point_list->points)[idx];
+        Edge *e = p.e;
+        Edge *f = p.e;
 
-		do {
-			f = f->twin->dnext;
+        if (f == NULL) continue;
 
-			if (compareXY(f->orig, f->twin->orig))
-			{
-				showEdge(f);
-				printf("\n");
-			}
-		} while (f != e);
-	}
+        do {
+            f = f->twin->dnext;
+
+            if (compareXY(f->orig, f->twin->orig))
+            {
+                showEdge(f);
+                printf("\n");
+            }
+        } while (f != e);
+    }
 }
-
-/*
-void showEdges(Point *point_list[], size_t num_points)
-{
-	for (size_t idx = 0; idx < num_points; idx++)
-	{
-		Point *p = point_list[idx];
-		Edge *e = p->e;
-		Edge *f = p->e;
-
-		do {
-			f = f->twin->dnext;
-
-			if (compareXY(f->orig, f->twin->orig))
-			{
-				showEdge(f);
-				printf("\n");
-			}
-		} while (f != e);
-	}
-}
-*/
-
-/*
-void showPointEdges(Point *point_list[], size_t num_points)
-{
-	for (size_t idx = 0; idx < num_points; idx++)
-	{
-		printf("Point (");
-		showPoint(point_list[idx]);
-		printf(") goes through <<");
-		if (point_list[idx]->e) showEdge(point_list[idx]->e);
-		else printf("NULL");
-		printf(">>\n");
-	}
-}
-*/
