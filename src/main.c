@@ -6,9 +6,14 @@
 #include "topology.h"
 #include "io.h"
 
-int main()
+int main(int argc, char** argv)
 {
-    char filename[] = "input.txt";
+    if (argc != 2)
+    {
+        printf("Usage: delaunay <input-file>\n");
+        exit(1);
+    }
+    const char* filename = argv[1];
     PointList *point_list = getPoints(filename);
     size_t num_points = point_list->size;
 

@@ -10,7 +10,7 @@
  *      coordinates for a single point
  * File should not have an empty newline at end
  */
-PointList *getPoints(char *filename)
+PointList *getPoints(const char *filename)
 {
     FILE *fptr = fopen(filename, "r");
     if (fptr == NULL)

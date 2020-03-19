@@ -3,7 +3,7 @@
 
 #include "defs.h"
 
-PointList *getPoints(char *filename);
+PointList *getPoints(const char *filename);
 void showPoint(Point *p);
 void showPoints(Point *point_list[], size_t num_points);
 void showEdge(Edge *e);
