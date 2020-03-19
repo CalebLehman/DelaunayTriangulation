@@ -33,7 +33,7 @@ PointList *getPoints(char *filename)
     point_list->unused_points = malloc((point_list->size) * sizeof *(point_list->unused_points));
     for (size_t i = 0; i < point_list->size; i++)
     {
-        (point_list->unused_points)[i] = point_list->points + i;
+        (point_list->unused_points)[i] = point_list->points + point_list->size - 1 - i;
     }
 
     while (fgets(buffer, BUFF_SIZE, fptr))
@@ -104,7 +104,13 @@ void showEdges(PointList *point_list)
 
             if (compareXY(f->orig, f->twin->orig))
             {
+                #ifdef COORD_OUTPUT
+                // Show coordinates of endpoints
                 showEdge(f);
+                #else
+                // Show index in point list of endpoints
+                printf("%d %d\t", f->orig - point_list->points, f->twin->orig - point_list->points);
+                #endif
                 printf("\n");
             }
         } while (f != e);

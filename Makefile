@@ -17,11 +17,14 @@ TARGETS = delaunay
 
 all: $(TARGETS)
 
-.PHONY: make_build
-make_build:
+coord-output: C_FLAGS += -DCOORD_OUTPUT
+coord-output: all
+
+.PHONY: make-build
+make-build:
 	mkdir -p $(BUILD_DIR)
 
-$(TARGETS): make_build $(OBJECTS)
+$(TARGETS): make-build $(OBJECTS)
 	$(C_COMPILER) -o $@ $(OBJECTS) $(LD_FLAGS)
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c $(HEADERS)
