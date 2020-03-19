@@ -1,21 +1,33 @@
-CPP=gcc
-CPPFLAGS=-O3
-LINKERFLAGS=
+C_COMPILER = gcc
+C_FLAGS    = -O3 \
+             -Wall \
+             -Wextra \
+             -Wshadow \
+             -pedantic
+LD_FLAGS   =
 
-SRCDIR=src
-BUILDDIR=build
+SRC_DIR     = ./src
+INCLUDE_DIR = ./include
+BUILD_DIR   = ./build
 
-DEPS=$(SRCDIR)/defs.h $(SRCDIR)/delaunay.h $(SRCDIR)/helper.h $(SRCDIR)/io.h $(SRCDIR)/topology.h
-SOURCES=$(wildcard $(SRCDIR)/*.c)
-OBJECTS=$(patsubst $(SRCDIR)/%.c, $(BUILDDIR)/%.o, $(SOURCES))
+HEADERS = $(wildcard $(INCLUDE_DIR)/*.h)
+SOURCES = $(wildcard $(SRC_DIR)/*.c)
+OBJECTS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SOURCES))
+TARGETS = delaunay
 
-$(BUILDDIR)/delaunay: $(OBJECTS)
-	$(CPP) -o $@ $^ $(LINKERFLAGS)
+all: $(TARGETS)
 
-$(OBJECTS) : $(BUILDDIR)/%.o : $(SRCDIR)/%.c $(DEPS)
-	$(CPP) $(CPPFLAGS) -c -o $@ $<
+.PHONY: make_build
+make_build:
+	mkdir -p $(BUILD_DIR)
 
-.PHONY : clean
-clean :
-	rm -f $(BUILDDIR)/delaunay
-	rm -f $(BUILDDIR)/*.o
+$(TARGETS): make_build $(OBJECTS)
+	$(C_COMPILER) -o $@ $(OBJECTS) $(LD_FLAGS)
+
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c $(HEADERS)
+	$(C_COMPILER) $(C_FLAGS) -I$(INCLUDE_DIR) -c -o $@ $<
+
+.PHONY: clean
+clean:
+	rm -f $(TARGETS)
+	rm -f $(BUILD_DIR) -r
