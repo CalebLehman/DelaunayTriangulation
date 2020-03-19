@@ -9,7 +9,7 @@
 Point *getPoint(PointList *point_list);
 Point *makePoint(VALUE x, VALUE y, PointList *point_list);
 void destroyPoint(Point *p, PointList *point_list, EdgeList *edge_list);
-void freePoints(PointList *point_list, EdgeList *edge_list);
+void freePoints(PointList *point_list);
 
 /* Edge functions
  */

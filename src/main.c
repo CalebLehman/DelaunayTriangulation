@@ -6,7 +6,7 @@
 #include "topology.h"
 #include "io.h"
 
-void main()
+int main()
 {
     char filename[] = "input.txt";
     PointList *point_list = getPoints(filename);
@@ -26,9 +26,11 @@ void main()
 
     free(ex);
 
-    freePoints(point_list, edge_list);
+    freePoints(point_list);
     freeEdges(edge_list);
     free(edge_list);
     free(point_list);
     free(point_ptr_list);
+
+    return 0;
 }

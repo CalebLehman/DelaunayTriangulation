@@ -1,5 +1,6 @@
 C_COMPILER = gcc
 C_FLAGS    = -O3 \
+             -std=c11 \
              -Wall \
              -Wextra \
              -Wshadow \

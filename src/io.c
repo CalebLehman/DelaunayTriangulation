@@ -25,7 +25,7 @@ PointList *getPoints(char *filename)
     char buffer[BUFF_SIZE];
     if (fgets(buffer, BUFF_SIZE, fptr))
     {
-        sscanf(buffer, "%d", &(point_list->size));
+        sscanf(buffer, "%zu", &(point_list->size));
     }
 
     point_list->idx = point_list->size;
@@ -51,7 +51,7 @@ PointList *getPoints(char *filename)
  */
 void showPoints(Point *point_list[], size_t num_points)
 {
-    printf("Total # of points: %d\n", num_points);
+    printf("Total # of points: %zu\n", num_points);
     for (size_t idx = 0; idx < num_points; idx++)
     {
         showPoint(point_list[idx]);
@@ -107,11 +107,11 @@ void showEdges(PointList *point_list)
                 #ifdef COORD_OUTPUT
                 // Show coordinates of endpoints
                 showEdge(f);
+                printf("\n");
                 #else
                 // Show index in point list of endpoints
-                printf("%d %d\t", f->orig - point_list->points, f->twin->orig - point_list->points);
+                printf(VALUE_SPEC" "VALUE_SPEC"\n", f->orig - point_list->points, f->twin->orig - point_list->points);
                 #endif
-                printf("\n");
             }
         } while (f != e);
     }

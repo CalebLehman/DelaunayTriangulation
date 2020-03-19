@@ -11,7 +11,7 @@ Point *getPoint(PointList *point_list)
 {
     if (point_list->idx == 0)
     {
-        printf("Out of vertex memory (%d vertices)\nExiting...\n", point_list->size);
+        printf("Out of vertex memory (%zu vertices)\nExiting...\n", point_list->size);
         exit(1);
     }
 
@@ -46,7 +46,7 @@ void destroyPoint(Point *p, PointList *point_list, EdgeList *edge_list)
     (point_list->idx)++;
 }
 
-void freePoints(PointList *point_list, EdgeList *edge_list)
+void freePoints(PointList *point_list)
 {
     free(point_list->points);
     free(point_list->unused_points);
@@ -60,7 +60,7 @@ Edge *getEdge(EdgeList *edge_list)
 {
     if (edge_list->idx == 0)
     {
-        printf("Out of edge memory (%d edges)\nExiting...\n", edge_list->size);
+        printf("Out of edge memory (%zu edges)\nExiting...\n", edge_list->size);
         exit(1);
     }
 

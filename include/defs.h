@@ -7,6 +7,7 @@ typedef struct Point Point;
 typedef struct Edge Edge;
 typedef struct ExtremeEdge ExtremeEdge;
 typedef long VALUE;
+#define VALUE_SPEC "%ld"
 typedef struct EdgeList EdgeList;
 typedef struct PointList PointList;
 
